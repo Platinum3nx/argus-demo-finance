@@ -1,0 +1,16 @@
+name: Argus Security Audit
+
+on: [push, pull_request]
+
+jobs:
+  argus-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Run Argus AI Auditor
+        # This points to your main repo where we just added action.yml
+        uses: Platinum3nx/Argus@main
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
