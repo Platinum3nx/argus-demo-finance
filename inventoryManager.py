@@ -29,6 +29,6 @@ def add_product_id(existing_ids: List[int], new_id: int) -> List[int]:
         >>> add_product_id([101, 102, 103], 104)
         [101, 102, 103, 104]
     """
-    # BUG: Appends without checking for duplicates!
+    # BUG: Appends without checking for duplicates!!
     # This violates the safety invariant if new_id is already in existing_ids
     return existing_ids + [new_id]
