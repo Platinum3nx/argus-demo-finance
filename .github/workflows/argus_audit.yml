@@ -1,13 +1,16 @@
 name: Argus Security Audit
+
 on:
   push:
-    branches: [main]
+    branches: ['**']  # Runs on ALL branches (main, feature branches, etc.)
   pull_request:
-    branches: [main]
+    branches: ['**']
+
 # Required for Auto-Remediation PR creation
 permissions:
   contents: write
   pull-requests: write
+
 jobs:
   argus-check:
     runs-on: ubuntu-latest
