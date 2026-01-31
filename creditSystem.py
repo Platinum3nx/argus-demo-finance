@@ -31,5 +31,7 @@ def authorize_charge(current_balance: int, charge_amount: int, credit_limit: int
         >>> authorize_charge(950, 100, 1000)
         950  # Declined
     """
-    # BUG: Blindly approves charge without checking credit limit!
-    return current_balance + charge_amount
+    if current_balance + charge_amount <= credit_limit:
+        return current_balance + charge_amount
+    else:
+        return current_balance
