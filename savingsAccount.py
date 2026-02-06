@@ -31,10 +31,11 @@ def deposit(balance: int, amount: int) -> int:
         >>> deposit(1000, -100)
         1000  # Rejected - negative amount
     """
-    if amount <= 0:
-        return balance  # Reject non-positive deposits
     if balance < 0:
         balance = 0  # Sanitize invalid state
+        
+    if amount <= 0:
+        return balance  # Reject non-positive deposits
     
     return balance + amount
 
@@ -60,10 +61,12 @@ def withdraw(balance: int, amount: int, minimum_balance: int) -> int:
         >>> withdraw(1000, 950, 100)
         1000  # Rejected - would go below minimum
     """
-    if amount <= 0:
-        return balance  # Reject non-positive withdrawals
     if balance < 0:
         balance = 0
+        
+    if amount <= 0:
+        return balance  # Reject non-positive withdrawals
+
     if minimum_balance < 0:
         minimum_balance = 0
     
