@@ -156,8 +156,6 @@ def can_withdraw(balance: int, amount: int, minimum_balance: int) -> bool:
     """
     if amount <= 0:
         return False
-    if balance < 0:
-        return False
     if minimum_balance < 0:
         minimum_balance = 0
     
