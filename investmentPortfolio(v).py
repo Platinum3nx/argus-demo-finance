@@ -25,7 +25,12 @@ def calculate_portfolio_value(quantities: List[int], prices: List[int]) -> int:
     Only counts positive quantities with positive prices.
     """
     total_value = 0
-    for i in range(len(quantities)):
+    # Safety: Use the minimum length to prevent index out of range
+    limit = len(quantities)
+    if len(prices) < limit:
+        limit = len(prices)
+        
+    for i in range(limit):
         qty = quantities[i]
         price = prices[i]
         # Safety: only add if both are positive
@@ -45,7 +50,14 @@ def calculate_total_gain(quantities: List[int], prices: List[int], costs: List[i
     Note: Result can be negative (loss), so we don't ensure >= 0.
     """
     total_gain = 0
-    for i in range(len(quantities)):
+    # Safety: Use the minimum length of all arrays involved
+    limit = len(quantities)
+    if len(prices) < limit:
+        limit = len(prices)
+    if len(costs) < limit:
+        limit = len(costs)
+        
+    for i in range(limit):
         qty = quantities[i]
         price = prices[i]
         cost = costs[i]
@@ -65,7 +77,14 @@ def count_profitable_positions(quantities: List[int], prices: List[int], costs: 
     A position is profitable if current price > cost basis.
     """
     profitable_count = 0
-    for i in range(len(quantities)):
+    # Safety: Use the minimum length of all arrays involved
+    limit = len(quantities)
+    if len(prices) < limit:
+        limit = len(prices)
+    if len(costs) < limit:
+        limit = len(costs)
+        
+    for i in range(limit):
         qty = quantities[i]
         price = prices[i]
         cost = costs[i]
@@ -100,7 +119,12 @@ def calculate_dividend_income(quantities: List[int], dividends_per_share: List[i
     dividends_per_share[i] = annual dividend per share for stock i (in cents).
     """
     total_dividends = 0
-    for i in range(len(quantities)):
+    # Safety: Use the minimum length to prevent index out of range
+    limit = len(quantities)
+    if len(dividends_per_share) < limit:
+        limit = len(dividends_per_share)
+        
+    for i in range(limit):
         qty = quantities[i]
         div = dividends_per_share[i]
         if qty > 0 and div > 0:
