@@ -20,25 +20,25 @@ def convert_currency_batch(amounts: List[int], rate: int) -> int:
     Argus proves that with a positive rate and positive amounts, 
     the total converted value remains non-negative.
     """
-    total_converted = 0
+    totalConverted = 0
     for amount in amounts:
         # Safety: Only convert valid, positive transactions
         if amount > 0:
             converted = amount * rate
-            total_converted = total_converted + converted
-    return total_converted
+            totalConverted = totalConverted + converted
+    return totalConverted
 
-def calculate_exchange_fee(amounts: List[int], fee_per_tx: int) -> int:
+def calculate_exchange_fee(amounts: List[int], feePerTx: int) -> int:
     """
     Calculate the total exchange fees for a batch of transactions.
     
-    @requires: fee_per_tx >= 0
+    @requires: feePerTx >= 0
     @ensures: result >= 0
     
     Demonstrates: Accumulation of a constant value based on list filtering.
     """
-    total_fee = 0
+    totalFee = 0
     for amount in amounts:
         if amount > 0:
-            total_fee = total_fee + fee_per_tx
-    return total_fee
+            totalFee = totalFee + feePerTx
+    return totalFee
