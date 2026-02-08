@@ -105,4 +105,4 @@
 #         div = dividends_per_share[i]
 #         if qty > 0 and div > 0:
 #             total_dividends = total_dividends + (qty * div)
-#     return total_dividends
+#     return total_dividends 
