@@ -302,60 +302,68 @@ def calculate_transaction_fee(amount: int, fee_bps: int, min_fee: int, max_fee: 
     if amount < 0 or fee_bps < 0 or min_fee < 0:
         return 0
     
-    effective_max_fee = max_fee
-    if effective_max_fee < min_fee:
-        effective_max_fee = min_fee
+    if max_fee < min_fee:
+        max_fee = min_fee
     
     calculated_fee = (amount * fee_bps) // 10000
     
     if calculated_fee < min_fee:
         return min_fee
     
-    if calculated_fee > effective_max_fee:
-        return effective_max_fee
+    if calculated_fee > max_fee:
+        return max_fee
     
     return calculated_fee
 
 
-def process_transfer(source_balance: int, dest_balance: int, amount: int, fee: int) -> Tuple[int, int]:
+def process_transfer_source(source_balance: int, amount: int, fee: int) -> int:
     """
-    Process a transfer between two accounts.
+    Calculate new source balance after a transfer.
     
     @requires: source_balance >= 0
-    @requires: dest_balance >= 0
     @requires: amount >= 0
     @requires: fee >= 0
-    @ensures: result[0] >= 0
-    @ensures: result[1] >= 0
+    @ensures: result >= 0
     
-    Returns (new_source_balance, new_dest_balance).
-    Transfer only succeeds if source has sufficient funds for amount + fee.
+    Returns new source balance after deducting amount + fee.
+    Returns original balance if insufficient funds.
     """
-    eff_source = source_balance
-    if eff_source < 0:
-        eff_source = 0
+    if source_balance < 0:
+        return 0
+    if amount < 0:
+        amount = 0
+    if fee < 0:
+        fee = 0
     
-    eff_dest = dest_balance
-    if eff_dest < 0:
-        eff_dest = 0
-        
-    eff_amount = amount
-    if eff_amount < 0:
-        eff_amount = 0
-        
-    eff_fee = fee
-    if eff_fee < 0:
-        eff_fee = 0
+    total_debit = amount + fee
     
-    total_debit = eff_amount + eff_fee
-    
-    if eff_source >= total_debit:
-        new_source = eff_source - total_debit
-        new_dest = eff_dest + eff_amount
-        return (new_source, new_dest)
+    if source_balance >= total_debit:
+        return source_balance - total_debit
     
     # Insufficient funds, no transfer
-    return (eff_source, eff_dest)
+    return source_balance
+
+
+def process_transfer_dest(dest_balance: int, amount: int, transfer_approved: int) -> int:
+    """
+    Calculate new destination balance after a transfer.
+    
+    @requires: dest_balance >= 0
+    @requires: amount >= 0
+    @requires: transfer_approved >= 0
+    @ensures: result >= 0
+    
+    Returns new dest balance after adding amount (if transfer approved).
+    """
+    if dest_balance < 0:
+        return 0
+    if amount < 0:
+        return dest_balance
+    
+    if transfer_approved == 1:
+        return dest_balance + amount
+    
+    return dest_balance
 
 
 def batch_sum_transactions(amounts: List[int]) -> int:
@@ -384,17 +392,14 @@ def count_valid_transactions(amounts: List[int], min_amount: int, max_amount: in
     
     Returns count of amounts where min_amount <= amount <= max_amount.
     """
-    eff_min = min_amount
-    if eff_min < 0:
-        eff_min = 0
-        
-    eff_max = max_amount
-    if eff_max < eff_min:
-        eff_max = eff_min
+    if min_amount < 0:
+        min_amount = 0
+    if max_amount < min_amount:
+        max_amount = min_amount
     
     count = 0
     for amount in amounts:
-        if amount >= eff_min and amount <= eff_max:
+        if amount >= min_amount and amount <= max_amount:
             count = count + 1
     return count
 
@@ -594,12 +599,10 @@ def calculate_available_credit(credit_limit: int, current_balance: int) -> int:
     """
     if credit_limit < 0:
         return 0
+    if current_balance < 0:
+        current_balance = 0
     
-    eff_balance = current_balance
-    if eff_balance < 0:
-        eff_balance = 0
-    
-    available = credit_limit - eff_balance
+    available = credit_limit - current_balance
     if available < 0:
         return 0
     return available
@@ -617,22 +620,18 @@ def process_card_charge(balance: int, charge: int, credit_limit: int) -> int:
     Only processes if within available credit.
     Returns new balance.
     """
-    eff_balance = balance
-    if eff_balance < 0:
-        eff_balance = 0
-        
-    eff_limit = credit_limit
-    if eff_limit < 0:
-        eff_limit = 0
-        
+    if balance < 0:
+        balance = 0
+    if credit_limit < 0:
+        credit_limit = 0
     if charge < 0:
-        return eff_balance
+        return balance
     
-    new_balance = eff_balance + charge
+    new_balance = balance + charge
     
-    if new_balance > eff_limit:
+    if new_balance > credit_limit:
         # Decline - return original balance
-        return eff_balance
+        return balance
     
     return new_balance
 
@@ -650,21 +649,17 @@ def calculate_minimum_payment(balance: int, min_payment_pct_bps: int, min_paymen
     """
     if balance <= 0:
         return 0
-        
-    eff_pct = min_payment_pct_bps
-    if eff_pct < 0:
-        eff_pct = 0
-        
-    eff_floor = min_payment_floor
-    if eff_floor < 0:
-        eff_floor = 0
+    if min_payment_pct_bps < 0:
+        min_payment_pct_bps = 0
+    if min_payment_floor < 0:
+        min_payment_floor = 0
     
-    pct_payment = (balance * eff_pct) // 10000
+    pct_payment = (balance * min_payment_pct_bps) // 10000
     
-    if pct_payment < eff_floor:
-        min_payment = eff_floor
-    else:
-        min_payment = pct_payment
+    # Use the greater of pct_payment or floor
+    min_payment = pct_payment
+    if min_payment < min_payment_floor:
+        min_payment = min_payment_floor
     
     # Can't pay more than balance
     if min_payment > balance:
@@ -729,22 +724,17 @@ def calculate_risk_score(utilization_bps: int, dti_bps: int, payment_history_sco
     
     Higher score = higher risk. Weighted combination of factors.
     """
-    eff_util = utilization_bps
-    if eff_util < 0:
-        eff_util = 0
-        
-    eff_dti = dti_bps
-    if eff_dti < 0:
-        eff_dti = 0
-        
-    eff_history = payment_history_score
-    if eff_history < 0:
-        eff_history = 0
+    if utilization_bps < 0:
+        utilization_bps = 0
+    if dti_bps < 0:
+        dti_bps = 0
+    if payment_history_score < 0:
+        payment_history_score = 0
     
     # Weights: utilization 40%, DTI 40%, payment history 20%
-    util_component = (eff_util * 40) // 100
-    dti_component = (eff_dti * 40) // 100
-    history_component = (eff_history * 20) // 100
+    util_component = (utilization_bps * 40) // 100
+    dti_component = (dti_bps * 40) // 100
+    history_component = (payment_history_score * 20) // 100
     
     total_score = util_component + dti_component + history_component
     
@@ -766,14 +756,12 @@ def calculate_loss_given_default(exposure: int, recovery_rate_bps: int) -> int:
     """
     if exposure < 0:
         return 0
-        
-    eff_recovery = recovery_rate_bps
-    if eff_recovery < 0:
-        eff_recovery = 0
-    if eff_recovery > 10000:
-        eff_recovery = 10000
+    if recovery_rate_bps < 0:
+        recovery_rate_bps = 0
+    if recovery_rate_bps > 10000:
+        recovery_rate_bps = 10000
     
-    loss_rate_bps = 10000 - eff_recovery
+    loss_rate_bps = 10000 - recovery_rate_bps
     lgd = (exposure * loss_rate_bps) // 10000
     
     if lgd < 0:
@@ -921,16 +909,12 @@ def calculate_overdraft_fee(overdraft_amount: int, fee_per_occurrence: int, max_
         return 0
     if fee_per_occurrence < 0:
         return 0
-        
-    eff_fees_today = fees_today
-    if eff_fees_today < 0:
-        eff_fees_today = 0
-        
-    eff_max = max_daily_fees
-    if eff_max < 0:
-        eff_max = 0
+    if fees_today < 0:
+        fees_today = 0
+    if max_daily_fees < 0:
+        max_daily_fees = 0
     
-    if eff_fees_today >= eff_max:
+    if fees_today >= max_daily_fees:
         return 0  # Daily cap reached
     
     return fee_per_occurrence
@@ -1124,12 +1108,10 @@ def calculate_monthly_fee(balance: int, fee_amount: int, waiver_threshold: int) 
     """
     if balance < 0 or fee_amount < 0:
         return 0
-        
-    eff_threshold = waiver_threshold
-    if eff_threshold < 0:
-        eff_threshold = 0
+    if waiver_threshold < 0:
+        waiver_threshold = 0
     
-    if balance >= eff_threshold:
+    if balance >= waiver_threshold:
         return 0  # Fee waived
     
     return fee_amount
@@ -1220,15 +1202,12 @@ def calculate_net_income(gross_income: int, total_expenses: int) -> int:
     
     Returns net income (can be negative).
     """
-    eff_gross = gross_income
-    if eff_gross < 0:
-        eff_gross = 0
-        
-    eff_expenses = total_expenses
-    if eff_expenses < 0:
-        eff_expenses = 0
+    if gross_income < 0:
+        gross_income = 0
+    if total_expenses < 0:
+        total_expenses = 0
     
-    return eff_gross - eff_expenses
+    return gross_income - total_expenses
 
 
 def calculate_expense_ratio(expenses: int, revenue: int) -> int:
@@ -1281,13 +1260,12 @@ def count_accounts_by_balance_tier(balances: List[int], tier_threshold: int) -> 
     
     Returns count of accounts with balance >= threshold.
     """
-    eff_threshold = tier_threshold
-    if eff_threshold < 0:
-        eff_threshold = 0
+    if tier_threshold < 0:
+        tier_threshold = 0
     
     count = 0
     for balance in balances:
-        if balance >= eff_threshold:
+        if balance >= tier_threshold:
             count = count + 1
     
     return count
@@ -1345,17 +1323,15 @@ def calculate_customer_lifetime_value(avg_annual_revenue: int, avg_lifetime_year
     """
     if avg_annual_revenue < 0 or avg_lifetime_years < 0:
         return 0
-        
-    eff_discount = discount_rate_bps
-    if eff_discount < 0:
-        eff_discount = 0
+    if discount_rate_bps < 0:
+        discount_rate_bps = 0
     
     # Simple undiscounted calculation for demo
     clv = avg_annual_revenue * avg_lifetime_years
     
     # Apply simple discount factor
-    if eff_discount > 0:
-        discount_factor = 10000 - (eff_discount * avg_lifetime_years // 2)
+    if discount_rate_bps > 0:
+        discount_factor = 10000 - (discount_rate_bps * avg_lifetime_years // 2)
         if discount_factor < 1000:  # Minimum 10%
             discount_factor = 1000
         clv = (clv * discount_factor) // 10000
