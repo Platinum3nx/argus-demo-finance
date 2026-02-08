@@ -28,22 +28,22 @@ class AccountType(Enum):
     RETIREMENT = "retirement"
 
 
-def create_account_balance(initialDeposit: int) -> int:
+def create_account_balance(initial_deposit: int) -> int:
     """
     Create a new account with an initial deposit.
     
-    @requires: initialDeposit >= 0
+    @requires: initial_deposit >= 0
     @ensures: result >= 0
     
     Initial deposits must be non-negative. The returned balance
     equals the initial deposit after account creation.
     """
-    if initialDeposit < 0:
+    if initial_deposit < 0:
         return 0
-    return initialDeposit
+    return initial_deposit
 
 
-def calculate_minimum_balance(accountTypeCode: int, balance: int) -> int:
+def calculate_minimum_balance(account_type_code: int, balance: int) -> int:
     """
     Calculate the minimum required balance for an account type.
     
@@ -60,60 +60,60 @@ def calculate_minimum_balance(accountTypeCode: int, balance: int) -> int:
     if balance < 0:
         return 0
     
-    if accountTypeCode == 0:
+    if account_type_code == 0:
         return 100
-    elif accountTypeCode == 1:
+    elif account_type_code == 1:
         return 500
-    elif accountTypeCode == 2:
+    elif account_type_code == 2:
         return 2500
-    elif accountTypeCode == 3:
+    elif account_type_code == 3:
         return 1000
     else:
         return 0
 
 
-def check_sufficient_funds(balance: int, amount: int, minimumBalance: int) -> int:
+def check_sufficient_funds(balance: int, amount: int, minimum_balance: int) -> int:
     """
     Check if an account has sufficient funds for a withdrawal.
     
     @requires: balance >= 0
-    @requires: minimumBalance >= 0
+    @requires: minimum_balance >= 0
     @ensures: result >= 0
     
     Returns 1 if funds are sufficient, 0 otherwise.
     The withdrawal must leave at least the minimum balance.
     """
-    if balance < 0 or minimumBalance < 0:
+    if balance < 0 or minimum_balance < 0:
         return 0
     
     if amount <= 0:
         return 1  # No withdrawal needed
     
     remaining = balance - amount
-    if remaining >= minimumBalance:
+    if remaining >= minimum_balance:
         return 1
     return 0
 
 
-def process_withdrawal(balance: int, amount: int, minimumBalance: int) -> int:
+def process_withdrawal(balance: int, amount: int, minimum_balance: int) -> int:
     """
     Process a withdrawal from an account.
     
     @requires: balance >= 0
-    @requires: minimumBalance >= 0
+    @requires: minimum_balance >= 0
     @ensures: result >= 0
     
     Only processes the withdrawal if sufficient funds exist.
     Returns the new balance (unchanged if withdrawal denied).
     """
-    if balance < 0 or minimumBalance < 0:
+    if balance < 0 or minimum_balance < 0:
         return 0
     
     if amount <= 0:
         return balance
     
     remaining = balance - amount
-    if remaining >= minimumBalance:
+    if remaining >= minimum_balance:
         return remaining
     
     # Insufficient funds, return original balance
@@ -142,24 +142,24 @@ def process_deposit(balance: int, amount: int) -> int:
 # SECTION 2: INTEREST CALCULATIONS
 # =============================================================================
 
-def calculate_simple_interest(principal: int, rateBps: int, days: int) -> int:
+def calculate_simple_interest(principal: int, rate_bps: int, days: int) -> int:
     """
     Calculate simple interest in basis points.
     
     @requires: principal >= 0
-    @requires: rateBps >= 0
+    @requires: rate_bps >= 0
     @requires: days >= 0
     @ensures: result >= 0
     
     Rate is in basis points (1 bp = 0.01%).
     Returns interest earned (in cents if principal is in cents).
-    Formula: principal * rateBps * days / (10000 * 365)
+    Formula: principal * rate_bps * days / (10000 * 365)
     """
-    if principal < 0 or rateBps < 0 or days < 0:
+    if principal < 0 or rate_bps < 0 or days < 0:
         return 0
     
     # Avoid overflow by dividing early
-    numerator = principal * rateBps * days
+    numerator = principal * rate_bps * days
     denominator = 10000 * 365
     
     if denominator == 0:
@@ -168,54 +168,54 @@ def calculate_simple_interest(principal: int, rateBps: int, days: int) -> int:
     return numerator // denominator
 
 
-def calculate_compound_interest_annual(principal: int, rateBps: int, years: int) -> int:
+def calculate_compound_interest_annual(principal: int, rate_bps: int, years: int) -> int:
     """
     Calculate compound interest (annual compounding).
     
     @requires: principal >= 0
-    @requires: rateBps >= 0
+    @requires: rate_bps >= 0
     @requires: years >= 0
     @ensures: result >= 0
     
     Simplified integer approximation for demo purposes.
     Returns the final amount after compounding.
     """
-    if principal < 0 or rateBps < 0 or years < 0:
+    if principal < 0 or rate_bps < 0 or years < 0:
         return 0
     
     amount = principal
-    for i in range(years):
-        interest = (amount * rateBps) // 10000
+    for _ in range(years):
+        interest = (amount * rate_bps) // 10000
         amount = amount + interest
     
     return amount
 
 
-def calculate_apy_from_apr(aprBps: int, compoundsPerYear: int) -> int:
+def calculate_apy_from_apr(apr_bps: int, compounds_per_year: int) -> int:
     """
     Convert APR to APY (Annual Percentage Yield).
     
-    @requires: aprBps >= 0
-    @requires: compoundsPerYear > 0
+    @requires: apr_bps >= 0
+    @requires: compounds_per_year > 0
     @ensures: result >= 0
     
     Returns APY in basis points.
     APY = (1 + APR/n)^n - 1
     """
-    if aprBps < 0:
+    if apr_bps < 0:
         return 0
     
-    if compoundsPerYear <= 0:
-        return aprBps
+    if compounds_per_year <= 0:
+        return apr_bps
     
     # Simplified integer approximation
-    # For more accuracy, use: ((10000 + aprBps/n)^n - 10000^n) / 10000^(n-1)
-    periodicRate = aprBps // compoundsPerYear
+    # For more accuracy, use: ((10000 + apr_bps/n)^n - 10000^n) / 10000^(n-1)
+    periodic_rate = apr_bps // compounds_per_year
     
     # Approximate compounding effect
     multiplier = 10000
-    for i in range(compoundsPerYear):
-        multiplier = (multiplier * (10000 + periodicRate)) // 10000
+    for _ in range(compounds_per_year):
+        multiplier = (multiplier * (10000 + periodic_rate)) // 10000
     
     apy = multiplier - 10000
     if apy < 0:
@@ -223,25 +223,25 @@ def calculate_apy_from_apr(aprBps: int, compoundsPerYear: int) -> int:
     return apy
 
 
-def calculate_daily_interest(balance: int, annualRateBps: int) -> int:
+def calculate_daily_interest(balance: int, annual_rate_bps: int) -> int:
     """
     Calculate daily interest accrual.
     
     @requires: balance >= 0
-    @requires: annualRateBps >= 0
+    @requires: annual_rate_bps >= 0
     @ensures: result >= 0
     
     Returns the daily interest amount.
     """
-    if balance < 0 or annualRateBps < 0:
+    if balance < 0 or annual_rate_bps < 0:
         return 0
     
     # daily_rate = annual_rate / 365
-    dailyInterest = (balance * annualRateBps) // (10000 * 365)
+    daily_interest = (balance * annual_rate_bps) // (10000 * 365)
     
-    if dailyInterest < 0:
+    if daily_interest < 0:
         return 0
-    return dailyInterest
+    return daily_interest
 
 
 def apply_interest_to_balance(balance: int, interest: int) -> int:
@@ -266,61 +266,61 @@ def apply_interest_to_balance(balance: int, interest: int) -> int:
 # SECTION 3: TRANSACTION PROCESSING
 # =============================================================================
 
-def validate_transaction_amount(amount: int, maxLimit: int) -> int:
+def validate_transaction_amount(amount: int, max_limit: int) -> int:
     """
     Validate a transaction amount against limits.
     
-    @requires: maxLimit >= 0
+    @requires: max_limit >= 0
     @ensures: result >= 0
     
     Returns 1 if valid, 0 if invalid.
     """
-    if maxLimit < 0:
+    if max_limit < 0:
         return 0
     
     if amount <= 0:
         return 0
     
-    if amount > maxLimit:
+    if amount > max_limit:
         return 0
     
     return 1
 
 
-def calculate_transaction_fee(amount: int, feeBps: int, minFee: int, maxFee: int) -> int:
+def calculate_transaction_fee(amount: int, fee_bps: int, min_fee: int, max_fee: int) -> int:
     """
     Calculate transaction fee with min/max bounds.
     
     @requires: amount >= 0
-    @requires: feeBps >= 0
-    @requires: minFee >= 0
-    @requires: maxFee >= minFee
+    @requires: fee_bps >= 0
+    @requires: min_fee >= 0
+    @requires: max_fee >= min_fee
     @ensures: result >= 0
     
     Fee is calculated as basis points of amount, bounded by min and max.
     """
-    if amount < 0 or feeBps < 0 or minFee < 0:
+    if amount < 0 or fee_bps < 0 or min_fee < 0:
         return 0
     
-    if maxFee < minFee:
-        maxFee = minFee
+    if max_fee < min_fee:
+        max_fee = min_fee
     
-    calculatedFee = (amount * feeBps) // 10000
+    calculated_fee = (amount * fee_bps) // 10000
     
-    if calculatedFee < minFee:
-        return minFee
+    if calculated_fee < min_fee:
+        return min_fee
     
-    if calculatedFee > maxFee:
-        return maxFee
+    if calculated_fee > max_fee:
+        return max_fee
     
-    return calculatedFee
+    return calculated_fee
 
 
-def process_transfer_source(sourceBalance: int, amount: int, fee: int) -> int:
+def process_transfer_source(source_balance: int, amount: int, fee: int) -> int:
     """
     Calculate new source balance after a transfer.
     
-    @requires: sourceBalance >= 0
+    @requires: source_balance >= 0
     @requires: amount >= 0
     @requires: fee >= 0
     @ensures: result >= 0
@@ -328,42 +328,42 @@ def process_transfer_source(sourceBalance: int, amount: int, fee: int) -> int:
     Returns new source balance after deducting amount + fee.
     Returns original balance if insufficient funds.
     """
-    if sourceBalance < 0:
+    if source_balance < 0:
         return 0
     if amount < 0:
         amount = 0
     if fee < 0:
         fee = 0
     
-    totalDebit = amount + fee
+    total_debit = amount + fee
     
-    if sourceBalance >= totalDebit:
-        return sourceBalance - totalDebit
+    if source_balance >= total_debit:
+        return source_balance - total_debit
     
     # Insufficient funds, no transfer
-    return sourceBalance
+    return source_balance
 
 
-def process_transfer_dest(destBalance: int, amount: int, transferApproved: int) -> int:
+def process_transfer_dest(dest_balance: int, amount: int, transfer_approved: int) -> int:
     """
     Calculate new destination balance after a transfer.
     
-    @requires: destBalance >= 0
+    @requires: dest_balance >= 0
     @requires: amount >= 0
-    @requires: transferApproved >= 0
+    @requires: transfer_approved >= 0
     @ensures: result >= 0
     
     Returns new dest balance after adding amount (if transfer approved).
     """
-    if destBalance < 0:
+    if dest_balance < 0:
         return 0
     if amount < 0:
-        return destBalance
+        return dest_balance
     
-    if transferApproved == 1:
-        return destBalance + amount
+    if transfer_approved == 1:
+        return dest_balance + amount
     
-    return destBalance
+    return dest_balance
 
 
 def batch_sum_transactions(amounts: List[int]) -> int:
@@ -382,24 +382,24 @@ def batch_sum_transactions(amounts: List[int]) -> int:
     return total
 
 
-def count_valid_transactions(amounts: List[int], minAmount: int, maxAmount: int) -> int:
+def count_valid_transactions(amounts: List[int], min_amount: int, max_amount: int) -> int:
     """
     Count transactions within valid range.
     
-    @requires: minAmount >= 0
-    @requires: maxAmount >= minAmount
+    @requires: min_amount >= 0
+    @requires: max_amount >= min_amount
     @ensures: result >= 0
     
-    Returns count of amounts where minAmount <= amount <= maxAmount.
+    Returns count of amounts where min_amount <= amount <= max_amount.
     """
-    if minAmount < 0:
-        minAmount = 0
-    if maxAmount < minAmount:
-        maxAmount = minAmount
+    if min_amount < 0:
+        min_amount = 0
+    if max_amount < min_amount:
+        max_amount = min_amount
     
     count = 0
     for amount in amounts:
-        if amount >= minAmount and amount <= maxAmount:
+        if amount >= min_amount and amount <= max_amount:
             count = count + 1
     return count
 
@@ -431,13 +431,13 @@ def calculate_average_transaction(amounts: List[int]) -> int:
 # SECTION 4: LOAN CALCULATIONS
 # =============================================================================
 
-def calculate_monthly_payment(principal: int, annualRateBps: int, termMonths: int) -> int:
+def calculate_monthly_payment(principal: int, annual_rate_bps: int, term_months: int) -> int:
     """
     Calculate monthly loan payment (simplified).
     
     @requires: principal >= 0
-    @requires: annualRateBps >= 0
-    @requires: termMonths > 0
+    @requires: annual_rate_bps >= 0
+    @requires: term_months > 0
     @ensures: result >= 0
     
     Uses simplified calculation for integer math.
@@ -445,39 +445,39 @@ def calculate_monthly_payment(principal: int, annualRateBps: int, termMonths: in
     """
     if principal < 0:
         return 0
-    if annualRateBps < 0:
+    if annual_rate_bps < 0:
         return 0
-    if termMonths <= 0:
+    if term_months <= 0:
         return 0
     
     # Simplified: principal / term + (principal * rate / 12 / 10000)
-    monthlyPrincipal = principal // termMonths
-    monthlyInterest = (principal * annualRateBps) // (12 * 10000)
+    monthly_principal = principal // term_months
+    monthly_interest = (principal * annual_rate_bps) // (12 * 10000)
     
-    payment = monthlyPrincipal + monthlyInterest
+    payment = monthly_principal + monthly_interest
     if payment < 0:
         return 0
     return payment
 
 
-def calculate_loan_interest_portion(balance: int, annualRateBps: int) -> int:
+def calculate_loan_interest_portion(balance: int, annual_rate_bps: int) -> int:
     """
     Calculate interest portion of loan payment.
     
     @requires: balance >= 0
-    @requires: annualRateBps >= 0
+    @requires: annual_rate_bps >= 0
     @ensures: result >= 0
     
     Returns monthly interest amount.
     """
-    if balance < 0 or annualRateBps < 0:
+    if balance < 0 or annual_rate_bps < 0:
         return 0
     
-    monthlyInterest = (balance * annualRateBps) // (12 * 10000)
+    monthly_interest = (balance * annual_rate_bps) // (12 * 10000)
     
-    if monthlyInterest < 0:
+    if monthly_interest < 0:
         return 0
-    return monthlyInterest
+    return monthly_interest
 
 
 def calculate_principal_portion(payment: int, interest: int) -> int:
@@ -499,85 +499,85 @@ def calculate_principal_portion(payment: int, interest: int) -> int:
     return principal
 
 
-def apply_loan_payment(balance: int, principalPayment: int) -> int:
+def apply_loan_payment(balance: int, principal_payment: int) -> int:
     """
     Apply principal payment to loan balance.
     
     @requires: balance >= 0
-    @requires: principalPayment >= 0
+    @requires: principal_payment >= 0
     @ensures: result >= 0
     
     Returns new balance (never negative).
     """
     if balance < 0:
         return 0
-    if principalPayment < 0:
+    if principal_payment < 0:
         return balance
     
-    newBalance = balance - principalPayment
-    if newBalance < 0:
+    new_balance = balance - principal_payment
+    if new_balance < 0:
         return 0
-    return newBalance
+    return new_balance
 
 
-def calculate_total_interest_paid(originalPrincipal: int, totalPayments: int) -> int:
+def calculate_total_interest_paid(original_principal: int, total_payments: int) -> int:
     """
     Calculate total interest paid over loan life.
     
-    @requires: originalPrincipal >= 0
-    @requires: totalPayments >= 0
+    @requires: original_principal >= 0
+    @requires: total_payments >= 0
     @ensures: result >= 0
     
     Total Interest = Total Payments - Original Principal.
     """
-    if originalPrincipal < 0 or totalPayments < 0:
+    if original_principal < 0 or total_payments < 0:
         return 0
     
-    if totalPayments <= originalPrincipal:
+    if total_payments <= original_principal:
         return 0
     
-    return totalPayments - originalPrincipal
+    return total_payments - original_principal
 
 
-def calculate_debt_to_income_ratio(monthlyDebt: int, monthlyIncome: int) -> int:
+def calculate_debt_to_income_ratio(monthly_debt: int, monthly_income: int) -> int:
     """
     Calculate debt-to-income ratio in basis points.
     
-    @requires: monthlyDebt >= 0
-    @requires: monthlyIncome > 0
+    @requires: monthly_debt >= 0
+    @requires: monthly_income > 0
     @ensures: result >= 0
     
     Returns DTI as basis points (e.g., 3500 = 35%).
     """
-    if monthlyDebt < 0 or monthlyIncome <= 0:
+    if monthly_debt < 0 or monthly_income <= 0:
         return 0
     
-    dtiBps = (monthlyDebt * 10000) // monthlyIncome
+    dti_bps = (monthly_debt * 10000) // monthly_income
     
-    if dtiBps < 0:
+    if dti_bps < 0:
         return 0
-    return dtiBps
+    return dti_bps
 
 
-def check_loan_eligibility(dtiBps: int, maxDtiBps: int, creditScore: int, minCreditScore: int) -> int:
+def check_loan_eligibility(dti_bps: int, max_dti_bps: int, credit_score: int, min_credit_score: int) -> int:
     """
     Check if applicant is eligible for a loan.
     
-    @requires: dtiBps >= 0
-    @requires: maxDtiBps >= 0
-    @requires: creditScore >= 0
-    @requires: minCreditScore >= 0
+    @requires: dti_bps >= 0
+    @requires: max_dti_bps >= 0
+    @requires: credit_score >= 0
+    @requires: min_credit_score >= 0
     @ensures: result >= 0
     
     Returns 1 if eligible, 0 if not.
     """
-    if dtiBps < 0 or creditScore < 0:
+    if dti_bps < 0 or credit_score < 0:
         return 0
     
-    if dtiBps > maxDtiBps:
+    if dti_bps > max_dti_bps:
         return 0
     
-    if creditScore < minCreditScore:
+    if credit_score < min_credit_score:
         return 0
     
     return 1
@@ -587,85 +587,85 @@ def check_loan_eligibility(dtiBps: int, maxDtiBps: int, creditScore: int, minCre
 # SECTION 5: CREDIT CARD OPERATIONS  
 # =============================================================================
 
-def calculate_available_credit(creditLimit: int, currentBalance: int) -> int:
+def calculate_available_credit(credit_limit: int, current_balance: int) -> int:
     """
     Calculate available credit on a card.
     
-    @requires: creditLimit >= 0
-    @requires: currentBalance >= 0
+    @requires: credit_limit >= 0
+    @requires: current_balance >= 0
     @ensures: result >= 0
     
     Available = Limit - Balance (never negative).
     """
-    if creditLimit < 0:
+    if credit_limit < 0:
         return 0
-    if currentBalance < 0:
-        currentBalance = 0
+    if current_balance < 0:
+        current_balance = 0
     
-    available = creditLimit - currentBalance
+    available = credit_limit - current_balance
     if available < 0:
         return 0
     return available
 
 
-def process_card_charge(balance: int, charge: int, creditLimit: int) -> int:
+def process_card_charge(balance: int, charge: int, credit_limit: int) -> int:
     """
     Process a credit card charge.
     
     @requires: balance >= 0
-    @requires: creditLimit >= 0
+    @requires: credit_limit >= 0
     @ensures: result >= 0
-    @ensures: result <= creditLimit
+    @ensures: result <= credit_limit
     
     Only processes if within available credit.
     Returns new balance.
     """
     if balance < 0:
         balance = 0
-    if creditLimit < 0:
-        creditLimit = 0
+    if credit_limit < 0:
+        credit_limit = 0
     if charge < 0:
         return balance
     
-    newBalance = balance + charge
+    new_balance = balance + charge
     
-    if newBalance > creditLimit:
+    if new_balance > credit_limit:
         # Decline - return original balance
         return balance
     
-    return newBalance
+    return new_balance
 
 
-def calculate_minimum_payment(balance: int, minPaymentPctBps: int, minPaymentFloor: int) -> int:
+def calculate_minimum_payment(balance: int, min_payment_pct_bps: int, min_payment_floor: int) -> int:
     """
     Calculate minimum credit card payment.
     
     @requires: balance >= 0
-    @requires: minPaymentPctBps >= 0
-    @requires: minPaymentFloor >= 0
+    @requires: min_payment_pct_bps >= 0
+    @requires: min_payment_floor >= 0
     @ensures: result >= 0
     
     Minimum is the greater of (balance * pct) or floor, capped at balance.
     """
     if balance <= 0:
         return 0
-    if minPaymentPctBps < 0:
-        minPaymentPctBps = 0
-    if minPaymentFloor < 0:
-        minPaymentFloor = 0
+    if min_payment_pct_bps < 0:
+        min_payment_pct_bps = 0
+    if min_payment_floor < 0:
+        min_payment_floor = 0
     
-    pctPayment = (balance * minPaymentPctBps) // 10000
+    pct_payment = (balance * min_payment_pct_bps) // 10000
     
-    # Use the greater of pctPayment or floor
-    minPayment = pctPayment
-    if minPayment < minPaymentFloor:
-        minPayment = minPaymentFloor
+    # Use the greater of pct_payment or floor
+    min_payment = pct_payment
+    if min_payment < min_payment_floor:
+        min_payment = min_payment_floor
     
     # Can't pay more than balance
-    if minPayment > balance:
+    if min_payment > balance:
         return balance
     
-    return minPayment
+    return min_payment
 
 
 def apply_card_payment(balance: int, payment: int) -> int:
@@ -683,149 +683,149 @@ def apply_card_payment(balance: int, payment: int) -> int:
     if payment < 0:
         return balance
     
-    newBalance = balance - payment
-    if newBalance < 0:
+    new_balance = balance - payment
+    if new_balance < 0:
         return 0
-    return newBalance
+    return new_balance
 
 
-def calculate_utilization_ratio(balance: int, creditLimit: int) -> int:
+def calculate_utilization_ratio(balance: int, credit_limit: int) -> int:
     """
     Calculate credit utilization ratio in basis points.
     
     @requires: balance >= 0
-    @requires: creditLimit > 0
+    @requires: credit_limit > 0
     @ensures: result >= 0
     
     Returns utilization as basis points (e.g., 3000 = 30%).
     """
-    if balance < 0 or creditLimit <= 0:
+    if balance < 0 or credit_limit <= 0:
         return 0
     
-    utilizationBps = (balance * 10000) // creditLimit
+    utilization_bps = (balance * 10000) // credit_limit
     
-    if utilizationBps < 0:
+    if utilization_bps < 0:
         return 0
-    return utilizationBps
+    return utilization_bps
 
 
 # =============================================================================
 # SECTION 6: RISK MANAGEMENT
 # =============================================================================
 
-def calculate_risk_score(utilizationBps: int, dtiBps: int, paymentHistoryScore: int) -> int:
+def calculate_risk_score(utilization_bps: int, dti_bps: int, payment_history_score: int) -> int:
     """
     Calculate overall risk score.
     
-    @requires: utilizationBps >= 0
-    @requires: dtiBps >= 0
-    @requires: paymentHistoryScore >= 0
+    @requires: utilization_bps >= 0
+    @requires: dti_bps >= 0
+    @requires: payment_history_score >= 0
     @ensures: result >= 0
     
     Higher score = higher risk. Weighted combination of factors.
     """
-    if utilizationBps < 0:
-        utilizationBps = 0
-    if dtiBps < 0:
-        dtiBps = 0
-    if paymentHistoryScore < 0:
-        paymentHistoryScore = 0
+    if utilization_bps < 0:
+        utilization_bps = 0
+    if dti_bps < 0:
+        dti_bps = 0
+    if payment_history_score < 0:
+        payment_history_score = 0
     
     # Weights: utilization 40%, DTI 40%, payment history 20%
-    utilComponent = (utilizationBps * 40) // 100
-    dtiComponent = (dtiBps * 40) // 100
-    historyComponent = (paymentHistoryScore * 20) // 100
+    util_component = (utilization_bps * 40) // 100
+    dti_component = (dti_bps * 40) // 100
+    history_component = (payment_history_score * 20) // 100
     
-    totalScore = utilComponent + dtiComponent + historyComponent
+    total_score = util_component + dti_component + history_component
     
-    if totalScore < 0:
+    if total_score < 0:
         return 0
-    return totalScore
+    return total_score
 
 
-def calculate_loss_given_default(exposure: int, recoveryRateBps: int) -> int:
+def calculate_loss_given_default(exposure: int, recovery_rate_bps: int) -> int:
     """
     Calculate potential loss given default.
     
     @requires: exposure >= 0
-    @requires: recoveryRateBps >= 0
-    @requires: recoveryRateBps <= 10000
+    @requires: recovery_rate_bps >= 0
+    @requires: recovery_rate_bps <= 10000
     @ensures: result >= 0
     
     LGD = Exposure * (1 - Recovery Rate).
     """
     if exposure < 0:
         return 0
-    if recoveryRateBps < 0:
-        recoveryRateBps = 0
-    if recoveryRateBps > 10000:
-        recoveryRateBps = 10000
+    if recovery_rate_bps < 0:
+        recovery_rate_bps = 0
+    if recovery_rate_bps > 10000:
+        recovery_rate_bps = 10000
     
-    lossRateBps = 10000 - recoveryRateBps
-    lgd = (exposure * lossRateBps) // 10000
+    loss_rate_bps = 10000 - recovery_rate_bps
+    lgd = (exposure * loss_rate_bps) // 10000
     
     if lgd < 0:
         return 0
     return lgd
 
 
-def calculate_expected_loss(exposure: int, pdBps: int, lgdPctBps: int) -> int:
+def calculate_expected_loss(exposure: int, pd_bps: int, lgd_pct_bps: int) -> int:
     """
     Calculate expected loss for credit exposure.
     
     @requires: exposure >= 0
-    @requires: pdBps >= 0
-    @requires: lgdPctBps >= 0
+    @requires: pd_bps >= 0
+    @requires: lgd_pct_bps >= 0
     @ensures: result >= 0
     
     EL = Exposure * PD * LGD.
     PD and LGD are in basis points.
     """
-    if exposure < 0 or pdBps < 0 or lgdPctBps < 0:
+    if exposure < 0 or pd_bps < 0 or lgd_pct_bps < 0:
         return 0
     
-    # EL = exposure * (pdBps / 10000) * (lgdPctBps / 10000)
-    el = (exposure * pdBps * lgdPctBps) // (10000 * 10000)
+    # EL = exposure * (pd_bps / 10000) * (lgd_pct_bps / 10000)
+    el = (exposure * pd_bps * lgd_pct_bps) // (10000 * 10000)
     
     if el < 0:
         return 0
     return el
 
 
-def calculate_capital_requirement(riskWeightedAssets: int, capitalRatioBps: int) -> int:
+def calculate_capital_requirement(risk_weighted_assets: int, capital_ratio_bps: int) -> int:
     """
     Calculate required capital based on risk-weighted assets.
     
-    @requires: riskWeightedAssets >= 0
-    @requires: capitalRatioBps >= 0
+    @requires: risk_weighted_assets >= 0
+    @requires: capital_ratio_bps >= 0
     @ensures: result >= 0
     
     Required Capital = RWA * Capital Ratio.
     """
-    if riskWeightedAssets < 0 or capitalRatioBps < 0:
+    if risk_weighted_assets < 0 or capital_ratio_bps < 0:
         return 0
     
-    required = (riskWeightedAssets * capitalRatioBps) // 10000
+    required = (risk_weighted_assets * capital_ratio_bps) // 10000
     
     if required < 0:
         return 0
     return required
 
 
-def check_capital_adequacy(currentCapital: int, requiredCapital: int) -> int:
+def check_capital_adequacy(current_capital: int, required_capital: int) -> int:
     """
     Check if capital meets regulatory requirements.
     
-    @requires: currentCapital >= 0
-    @requires: requiredCapital >= 0
+    @requires: current_capital >= 0
+    @requires: required_capital >= 0
     @ensures: result >= 0
     
     Returns 1 if adequate, 0 if not.
     """
-    if currentCapital < 0 or requiredCapital < 0:
+    if current_capital < 0 or required_capital < 0:
         return 0
     
-    if currentCapital >= requiredCapital:
+    if current_capital >= required_capital:
         return 1
     return 0
 
@@ -834,116 +834,116 @@ def check_capital_adequacy(currentCapital: int, requiredCapital: int) -> int:
 # SECTION 7: COMPLIANCE AND LIMITS
 # =============================================================================
 
-def check_transaction_limit(amount: int, dailyTotal: int, dailyLimit: int) -> int:
+def check_transaction_limit(amount: int, daily_total: int, daily_limit: int) -> int:
     """
     Check if transaction would exceed daily limit.
     
     @requires: amount >= 0
-    @requires: dailyTotal >= 0
-    @requires: dailyLimit >= 0
+    @requires: daily_total >= 0
+    @requires: daily_limit >= 0
     @ensures: result >= 0
     
     Returns 1 if within limit, 0 if would exceed.
     """
-    if amount < 0 or dailyTotal < 0 or dailyLimit < 0:
+    if amount < 0 or daily_total < 0 or daily_limit < 0:
         return 0
     
-    newTotal = dailyTotal + amount
+    new_total = daily_total + amount
     
-    if newTotal <= dailyLimit:
+    if new_total <= daily_limit:
         return 1
     return 0
 
 
-def calculate_remaining_daily_limit(dailyTotal: int, dailyLimit: int) -> int:
+def calculate_remaining_daily_limit(daily_total: int, daily_limit: int) -> int:
     """
     Calculate remaining daily transaction limit.
     
-    @requires: dailyTotal >= 0
-    @requires: dailyLimit >= 0
+    @requires: daily_total >= 0
+    @requires: daily_limit >= 0
     @ensures: result >= 0
     
     Returns remaining allowance (never negative).
     """
-    if dailyTotal < 0 or dailyLimit < 0:
+    if daily_total < 0 or daily_limit < 0:
         return 0
     
-    remaining = dailyLimit - dailyTotal
+    remaining = daily_limit - daily_total
     
     if remaining < 0:
         return 0
     return remaining
 
 
-def check_withdrawal_frequency(withdrawalsToday: int, maxWithdrawals: int) -> int:
+def check_withdrawal_frequency(withdrawals_today: int, max_withdrawals: int) -> int:
     """
     Check if additional withdrawal is allowed.
     
-    @requires: withdrawalsToday >= 0
-    @requires: maxWithdrawals >= 0
+    @requires: withdrawals_today >= 0
+    @requires: max_withdrawals >= 0
     @ensures: result >= 0
     
     Returns 1 if allowed, 0 if limit reached.
     """
-    if withdrawalsToday < 0 or maxWithdrawals < 0:
+    if withdrawals_today < 0 or max_withdrawals < 0:
         return 0
     
-    if withdrawalsToday < maxWithdrawals:
+    if withdrawals_today < max_withdrawals:
         return 1
     return 0
 
 
-def calculate_overdraft_fee(overdraftAmount: int, feePerOccurrence: int, maxDailyFees: int, feesToday: int) -> int:
+def calculate_overdraft_fee(overdraft_amount: int, fee_per_occurrence: int, max_daily_fees: int, fees_today: int) -> int:
     """
     Calculate overdraft fee with daily cap.
     
-    @requires: overdraftAmount >= 0
-    @requires: feePerOccurrence >= 0
-    @requires: maxDailyFees >= 0
-    @requires: feesToday >= 0
+    @requires: overdraft_amount >= 0
+    @requires: fee_per_occurrence >= 0
+    @requires: max_daily_fees >= 0
+    @requires: fees_today >= 0
     @ensures: result >= 0
     
     Returns fee amount (0 if daily cap reached).
     """
-    if overdraftAmount <= 0:
+    if overdraft_amount <= 0:
         return 0
-    if feePerOccurrence < 0:
+    if fee_per_occurrence < 0:
         return 0
-    if feesToday < 0:
-        feesToday = 0
-    if maxDailyFees < 0:
-        maxDailyFees = 0
+    if fees_today < 0:
+        fees_today = 0
+    if max_daily_fees < 0:
+        max_daily_fees = 0
     
-    if feesToday >= maxDailyFees:
+    if fees_today >= max_daily_fees:
         return 0  # Daily cap reached
     
-    return feePerOccurrence
+    return fee_per_occurrence
 
 
-def calculate_wire_transfer_fee(amount: int, domestic: int, baseFee: int, pctFeeBps: int) -> int:
+def calculate_wire_transfer_fee(amount: int, domestic: int, base_fee: int, pct_fee_bps: int) -> int:
     """
     Calculate wire transfer fee.
     
     @requires: amount >= 0
-    @requires: baseFee >= 0
-    @requires: pctFeeBps >= 0
+    @requires: base_fee >= 0
+    @requires: pct_fee_bps >= 0
     @ensures: result >= 0
     
     International wires have 2x the fee.
     """
-    if amount < 0 or baseFee < 0 or pctFeeBps < 0:
+    if amount < 0 or base_fee < 0 or pct_fee_bps < 0:
         return 0
     
-    pctPortion = (amount * pctFeeBps) // 10000
-    totalFee = baseFee + pctPortion
+    pct_portion = (amount * pct_fee_bps) // 10000
+    total_fee = base_fee + pct_portion
     
     # International multiplier
     if domestic == 0:
-        totalFee = totalFee * 2
+        total_fee = total_fee * 2
     
-    if totalFee < 0:
+    if total_fee < 0:
         return 0
-    return totalFee
+    return total_fee
 
 
 # =============================================================================
@@ -961,9 +961,9 @@ def calculate_portfolio_value(quantities: List[int], prices: List[int]) -> int:
     Safely handles lists of different lengths.
     """
     total = 0
-    minLen = min(len(quantities), len(prices))
+    min_len = min(len(quantities), len(prices))
     
-    for i in range(minLen):
+    for i in range(min_len):
         qty = quantities[i]
         price = prices[i]
         if qty > 0 and price > 0:
@@ -972,87 +972,87 @@ def calculate_portfolio_value(quantities: List[int], prices: List[int]) -> int:
     return total
 
 
-def calculate_position_weight(positionValue: int, portfolioValue: int) -> int:
+def calculate_position_weight(position_value: int, portfolio_value: int) -> int:
     """
     Calculate position weight in basis points.
     
-    @requires: positionValue >= 0
-    @requires: portfolioValue > 0
+    @requires: position_value >= 0
+    @requires: portfolio_value > 0
     @ensures: result >= 0
     
     Returns weight as basis points (e.g., 2500 = 25%).
     """
-    if positionValue < 0 or portfolioValue <= 0:
+    if position_value < 0 or portfolio_value <= 0:
         return 0
     
-    weightBps = (positionValue * 10000) // portfolioValue
+    weight_bps = (position_value * 10000) // portfolio_value
     
-    if weightBps < 0:
+    if weight_bps < 0:
         return 0
-    return weightBps
+    return weight_bps
 
 
-def calculate_return(initialValue: int, finalValue: int) -> int:
+def calculate_return(initial_value: int, final_value: int) -> int:
     """
     Calculate return in basis points.
     
-    @requires: initialValue > 0
-    @requires: finalValue >= 0
+    @requires: initial_value > 0
+    @requires: final_value >= 0
     @ensures: result >= -10000
     
     Returns return as basis points (can be negative for losses).
     """
-    if initialValue <= 0:
+    if initial_value <= 0:
         return 0
-    if finalValue < 0:
+    if final_value < 0:
         return -10000  # 100% loss cap
     
-    returnBps = ((finalValue - initialValue) * 10000) // initialValue
+    return_bps = ((final_value - initial_value) * 10000) // initial_value
     
     # Cap losses at -100%
-    if returnBps < -10000:
+    if return_bps < -10000:
         return -10000
     
-    return returnBps
+    return return_bps
 
 
-def calculate_dividend_yield(annualDividend: int, sharePrice: int) -> int:
+def calculate_dividend_yield(annual_dividend: int, share_price: int) -> int:
     """
     Calculate dividend yield in basis points.
     
-    @requires: annualDividend >= 0
-    @requires: sharePrice > 0
+    @requires: annual_dividend >= 0
+    @requires: share_price > 0
     @ensures: result >= 0
     
     Yield = (Dividend / Price) * 10000 bps.
     """
-    if annualDividend < 0 or sharePrice <= 0:
+    if annual_dividend < 0 or share_price <= 0:
         return 0
     
-    yieldBps = (annualDividend * 10000) // sharePrice
+    yield_bps = (annual_dividend * 10000) // share_price
     
-    if yieldBps < 0:
+    if yield_bps < 0:
         return 0
-    return yieldBps
+    return yield_bps
 
 
-def calculate_cost_basis_average(totalCost: int, totalShares: int) -> int:
+def calculate_cost_basis_average(total_cost: int, total_shares: int) -> int:
     """
     Calculate average cost basis per share.
     
-    @requires: totalCost >= 0
-    @requires: totalShares > 0
+    @requires: total_cost >= 0
+    @requires: total_shares > 0
     @ensures: result >= 0
     
     Returns average cost per share.
     """
-    if totalCost < 0 or totalShares <= 0:
+    if total_cost < 0 or total_shares <= 0:
         return 0
     
-    return totalCost // totalShares
+    return total_cost // total_shares
 
 
-def calculate_unrealized_gain(currentPrice: int, costBasis: int, shares: int) -> int:
+def calculate_unrealized_gain(current_price: int, cost_basis: int, shares: int) -> int:
     """
     Calculate unrealized gain/loss.
     
@@ -1064,13 +1064,13 @@ def calculate_unrealized_gain(currentPrice: int, costBasis: int, shares: int) ->
     if shares <= 0:
         return 0
     
-    currentValue = currentPrice * shares
-    costValue = costBasis * shares
+    current_value = current_price * shares
+    cost_value = cost_basis * shares
     
-    return currentValue - costValue
+    return current_value - cost_value
 
 
-def sum_portfolio_dividends(quantities: List[int], dividendsPerShare: List[int]) -> int:
+def sum_portfolio_dividends(quantities: List[int], dividends_per_share: List[int]) -> int:
     """
     Calculate total expected dividend income.
     
@@ -1080,11 +1080,11 @@ def sum_portfolio_dividends(quantities: List[int], dividendsPerShare: List[int])
     Safely handles lists of different lengths.
     """
     total = 0
-    minLen = min(len(quantities), len(dividendsPerShare))
+    min_len = min(len(quantities), len(dividends_per_share))
     
-    for i in range(minLen):
+    for i in range(min_len):
         qty = quantities[i]
-        div = dividendsPerShare[i]
+        div = dividends_per_share[i]
         if qty > 0 and div > 0:
             total = total + (qty * div)
     
@@ -1095,82 +1095,82 @@ def sum_portfolio_dividends(quantities: List[int], dividendsPerShare: List[int])
 # SECTION 9: FEE CALCULATIONS
 # =============================================================================
 
-def calculate_monthly_fee(balance: int, feeAmount: int, waiverThreshold: int) -> int:
+def calculate_monthly_fee(balance: int, fee_amount: int, waiver_threshold: int) -> int:
     """
     Calculate monthly maintenance fee.
     
     @requires: balance >= 0
-    @requires: feeAmount >= 0
-    @requires: waiverThreshold >= 0
+    @requires: fee_amount >= 0
+    @requires: waiver_threshold >= 0
     @ensures: result >= 0
     
     Fee is waived if balance >= threshold.
     """
-    if balance < 0 or feeAmount < 0:
+    if balance < 0 or fee_amount < 0:
         return 0
-    if waiverThreshold < 0:
-        waiverThreshold = 0
+    if waiver_threshold < 0:
+        waiver_threshold = 0
     
-    if balance >= waiverThreshold:
+    if balance >= waiver_threshold:
         return 0  # Fee waived
     
-    return feeAmount
+    return fee_amount
 
 
-def calculate_atm_fee(isInNetwork: int, outOfNetworkFee: int) -> int:
+def calculate_atm_fee(is_in_network: int, out_of_network_fee: int) -> int:
     """
     Calculate ATM withdrawal fee.
     
-    @requires: outOfNetworkFee >= 0
+    @requires: out_of_network_fee >= 0
     @ensures: result >= 0
     
     In-network ATMs are free.
     """
-    if outOfNetworkFee < 0:
+    if out_of_network_fee < 0:
         return 0
     
-    if isInNetwork == 1:
+    if is_in_network == 1:
         return 0
     
-    return outOfNetworkFee
+    return out_of_network_fee
 
 
-def calculate_foreign_transaction_fee(amount: int, feeBps: int) -> int:
+def calculate_foreign_transaction_fee(amount: int, fee_bps: int) -> int:
     """
     Calculate foreign transaction fee.
     
     @requires: amount >= 0
-    @requires: feeBps >= 0
+    @requires: fee_bps >= 0
     @ensures: result >= 0
     
     Returns fee amount.
     """
-    if amount < 0 or feeBps < 0:
+    if amount < 0 or fee_bps < 0:
         return 0
     
-    fee = (amount * feeBps) // 10000
+    fee = (amount * fee_bps) // 10000
     
     if fee < 0:
         return 0
     return fee
 
 
-def calculate_paper_statement_fee(enrolledPaperless: int, paperFee: int) -> int:
+def calculate_paper_statement_fee(enrolled_paperless: int, paper_fee: int) -> int:
     """
     Calculate paper statement fee.
     
-    @requires: paperFee >= 0
+    @requires: paper_fee >= 0
     @ensures: result >= 0
     
     Fee waived for paperless enrollment.
     """
-    if paperFee < 0:
+    if paper_fee < 0:
         return 0
     
-    if enrolledPaperless == 1:
+    if enrolled_paperless == 1:
         return 0
     
-    return paperFee
+    return paper_fee
 
 
 def sum_monthly_fees(fees: List[int]) -> int:
@@ -1193,21 +1193,21 @@ def sum_monthly_fees(fees: List[int]) -> int:
 # SECTION 10: REPORTING AND ANALYTICS
 # =============================================================================
 
-def calculate_net_income(grossIncome: int, totalExpenses: int) -> int:
+def calculate_net_income(gross_income: int, total_expenses: int) -> int:
     """
     Calculate net income from gross income and expenses.
     
-    @requires: grossIncome >= 0
+    @requires: gross_income >= 0
     @ensures: True
     
     Returns net income (can be negative).
     """
-    if grossIncome < 0:
-        grossIncome = 0
-    if totalExpenses < 0:
-        totalExpenses = 0
+    if gross_income < 0:
+        gross_income = 0
+    if total_expenses < 0:
+        total_expenses = 0
     
-    return grossIncome - totalExpenses
+    return gross_income - total_expenses
 
 
 def calculate_expense_ratio(expenses: int, revenue: int) -> int:
@@ -1223,11 +1223,11 @@ def calculate_expense_ratio(expenses: int, revenue: int) -> int:
     if expenses < 0 or revenue <= 0:
         return 0
     
-    ratioBps = (expenses * 10000) // revenue
+    ratio_bps = (expenses * 10000) // revenue
     
-    if ratioBps < 0:
+    if ratio_bps < 0:
         return 0
-    return ratioBps
+    return ratio_bps
 
 
 def calculate_profit_margin(profit: int, revenue: int) -> int:
@@ -1242,30 +1242,30 @@ def calculate_profit_margin(profit: int, revenue: int) -> int:
     if revenue <= 0:
         return 0
     
-    marginBps = (profit * 10000) // revenue
+    margin_bps = (profit * 10000) // revenue
     
     # Cap losses at -100%
-    if marginBps < -10000:
+    if margin_bps < -10000:
         return -10000
     
-    return marginBps
+    return margin_bps
 
 
-def count_accounts_by_balance_tier(balances: List[int], tierThreshold: int) -> int:
+def count_accounts_by_balance_tier(balances: List[int], tier_threshold: int) -> int:
     """
     Count accounts above a balance tier.
     
-    @requires: tierThreshold >= 0
+    @requires: tier_threshold >= 0
     @ensures: result >= 0
     
     Returns count of accounts with balance >= threshold.
     """
-    if tierThreshold < 0:
-        tierThreshold = 0
+    if tier_threshold < 0:
+        tier_threshold = 0
     
     count = 0
     for balance in balances:
-        if balance >= tierThreshold:
+        if balance >= tier_threshold:
             count = count + 1
     
     return count
@@ -1294,7 +1294,7 @@ def calculate_average_balance(balances: List[int]) -> int:
     return total // count
 
 
-def calculate_total_assets_under_management(accountBalances: List[int]) -> int:
+def calculate_total_assets_under_management(account_balances: List[int]) -> int:
     """
     Calculate total AUM across all accounts.
     
@@ -1304,37 +1304,37 @@ def calculate_total_assets_under_management(accountBalances: List[int]) -> int:
     Only counts positive balances.
     """
     total = 0
-    for balance in accountBalances:
+    for balance in account_balances:
         if balance > 0:
             total = total + balance
     return total
 
 
-def calculate_customer_lifetime_value(avgAnnualRevenue: int, avgLifetimeYears: int, discountRateBps: int) -> int:
+def calculate_customer_lifetime_value(avg_annual_revenue: int, avg_lifetime_years: int, discount_rate_bps: int) -> int:
     """
     Calculate simplified customer lifetime value.
     
-    @requires: avgAnnualRevenue >= 0
-    @requires: avgLifetimeYears >= 0
-    @requires: discountRateBps >= 0
+    @requires: avg_annual_revenue >= 0
+    @requires: avg_lifetime_years >= 0
+    @requires: discount_rate_bps >= 0
     @ensures: result >= 0
     
     Simplified calculation without proper NPV discounting.
     """
-    if avgAnnualRevenue < 0 or avgLifetimeYears < 0:
+    if avg_annual_revenue < 0 or avg_lifetime_years < 0:
         return 0
-    if discountRateBps < 0:
-        discountRateBps = 0
+    if discount_rate_bps < 0:
+        discount_rate_bps = 0
     
     # Simple undiscounted calculation for demo
-    clv = avgAnnualRevenue * avgLifetimeYears
+    clv = avg_annual_revenue * avg_lifetime_years
     
     # Apply simple discount factor
-    if discountRateBps > 0:
-        discountFactor = 10000 - (discountRateBps * avgLifetimeYears // 2)
-        if discountFactor < 1000:  # Minimum 10%
-            discountFactor = 1000
-        clv = (clv * discountFactor) // 10000
+    if discount_rate_bps > 0:
+        discount_factor = 10000 - (discount_rate_bps * avg_lifetime_years // 2)
+        if discount_factor < 1000:  # Minimum 10%
+            discount_factor = 1000
+        clv = (clv * discount_factor) // 10000
     
     if clv < 0:
         return 0

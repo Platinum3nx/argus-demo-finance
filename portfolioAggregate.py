@@ -27,21 +27,21 @@ def calculate_daily_total(transactions: List[int]) -> int:
             total = total + amount
     return total
 
-def calculate_interest_batch(balances: List[int], rateBps: int) -> int:
+def calculate_interest_batch(balances: List[int], rate_bps: int) -> int:
     """
     Calculate total interest payout for a batch of accounts.
     
-    @requires: rateBps >= 0
+    @requires: rate_bps >= 0
     @ensures: result >= 0
     
     Demonstrates: arithmetic operations inside a loop.
-    rateBps is basis points (1/10000).
+    rate_bps is basis points (1/10000).
     """
-    totalInterest = 0
+    total_interest = 0
     for balance in balances:
         if balance > 0:
             # Integer arithmetic: (balance * rate) // 10000
-            interest = (balance * rateBps) // 10000
+            interest = (balance * rate_bps) // 10000
             if interest > 0:
-                totalInterest = totalInterest + interest
-    return totalInterest
+                total_interest = total_interest + interest
+    return total_interest
