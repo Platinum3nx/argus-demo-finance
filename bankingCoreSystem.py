@@ -1229,7 +1229,6 @@ def calculate_expense_ratio(expenses: int, revenue: int) -> int:
         return 0
     return ratioBps
 
-
 def calculate_profit_margin(profit: int, revenue: int) -> int:
     """
     Calculate profit margin in basis points.
