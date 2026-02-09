@@ -1,0 +1,30 @@
+name: Argus Demo Trigger
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  argus-demo:
+    # Only run if it's a PR comment AND starts with /argus-test
+    if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/argus-test') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+
+    steps:
+      - name: Checkout PR Code
+        uses: actions/checkout@v4
+        with:
+          # Checkout the PR's HEAD commit so we test their changes
+          ref: refs/pull/${{ github.event.issue.number }}/head
+
+      - name: Run Argus AI Auditor
+        uses: Platinum3nx/Argus@main
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
